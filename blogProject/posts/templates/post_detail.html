@@ -100,6 +100,7 @@
       <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
           <div class="col-md-10 col-lg-8 col-xl-7">
+            {% if request.user == post.author %}
             <!-- 게시글 수정 버튼-->
             <div class="d-flex justify-content-end mb-4">
               <a class="btn btn-primary text-uppercase" href="{% url 'post_update' post.id %}">수정하기</a>
@@ -109,10 +110,40 @@
             <div class="d-flex justify-content-end mb-4">
               <a class="btn btn-primary text-uppercase" href="{% url 'post_delete' post.id %}">삭제하기</a>
             </div>
+            {% endif %}
 
             <h1 class="section-heading">{{post.title}}</h1>
+            <h3>작성자 : {{ post.author }}</h3>
             <blockquote class="blockquote">{{post.created_at}}</blockquote>
+            {% if post.photo %}
+            <img src = "{{ post.photo.url }}" alt = "" height = "300">
+            {% endif %}
             <p>{{post.body}}</p>
+            <!--********* 3.31 세션 추가 내용 ************-->
+            <h4>댓글</h4>
+            {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'create_comment' post.id %}">
+                {% csrf_token %}
+                {{ comment_form.as_table }}
+                <input type="submit">
+            </form>
+            {% else %}
+              <h>댓글 작성은 로그인 후 사용해주세요</h>
+            {% endif %}
+            <div>
+                <hr>
+                {% for comment in post.comments.all %}
+                <h3>댓글 작성자 : {{ comment.author }}</h3>
+                <p>{{ comment }}</p>
+                {% if request.user == comment.author %}
+                <a class="btn btn-primary text-uppercase" 
+                    href="{% url 'update_comment' post.id comment.id %}">댓글 수정</a>
+                <a class="btn btn-primary text-uppercase"
+                    href="{% url 'delete_comment' post.id comment.id %}">댓글 삭제</a>
+                {% endif %}
+                <hr>
+                {% endfor %}
+            </div>
           </div>
         </div>
       </div>
